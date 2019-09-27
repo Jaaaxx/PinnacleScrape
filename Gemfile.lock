@@ -1,0 +1,40 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    childprocess (1.0.1)
+      rake (< 13.0)
+    mini_portile2 (2.4.0)
+    mustermann (1.0.3)
+    nokogiri (1.10.4)
+      mini_portile2 (~> 2.4.0)
+    passenger (6.0.4)
+      rack
+      rake (>= 0.8.1)
+    rack (2.0.7)
+    rack-protection (2.0.7)
+      rack
+    rake (12.3.3)
+    rubyzip (1.2.4)
+    selenium-webdriver (4.0.0.alpha3)
+      childprocess (>= 0.5, < 2.0)
+      rubyzip (~> 1.2, >= 1.2.2)
+    sinatra (2.0.7)
+      mustermann (~> 1.0)
+      rack (~> 2.0)
+      rack-protection (= 2.0.7)
+      tilt (~> 2.0)
+    sqlite3 (1.4.1)
+    tilt (2.0.10)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  nokogiri
+  passenger (>= 6.0.0)
+  selenium-webdriver
+  sinatra
+  sqlite3
+
+BUNDLED WITH
+   1.17.3
