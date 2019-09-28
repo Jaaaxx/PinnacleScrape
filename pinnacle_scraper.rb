@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-ENV[MALLOC_ARENA_MAX = 2]
+MALLOC_ARENA_MAX = 2
 require 'rubygems'
 require 'bundler/setup'
 Bundler.require(:default)
