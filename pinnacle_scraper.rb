@@ -1,24 +1,28 @@
 # frozen_string_literal: true
 
+ENV[MALLOC_ARENA_MAX = 2]
 require 'rubygems'
 require 'bundler/setup'
 Bundler.require(:default)
+
+
 
 get '/' do
   'Pinnacle Web Scraper'
 end
 
 get '/api' do
+  # Configure the driver to run in headless mode
+  options = Selenium::WebDriver::Chrome::Options.new
+  options.add_argument('--headless')
+  d = Selenium::WebDriver.for :chrome, options: options
+
   @username = params['un'].to_s
   @password = params['pw'].to_s
 
   # Emulates rails' squish method
   squish = ->(s) { s.strip.gsub(/\s+/, ' ') }
   blank  = ->(s) { s.to_s.strip.empty? ? 'BLANK' : s }
-  # Configure the driver to run in headless mode
-  options = Selenium::WebDriver::Chrome::Options.new
-  options.add_argument('--headless')
-  d = Selenium::WebDriver.for :chrome, options: options
   d.get 'https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/GradeReport.aspx'
   # Login Page
   (d.find_element :id, 'userNameInput').clear
