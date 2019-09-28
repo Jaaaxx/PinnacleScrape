@@ -7,6 +7,7 @@ GEM
     mustermann (1.0.3)
     nokogiri (1.10.4)
       mini_portile2 (~> 2.4.0)
+    parallel (1.17.0)
     passenger (6.0.4)
       rack
       rake (>= 0.8.1)
@@ -31,6 +32,7 @@ PLATFORMS
 
 DEPENDENCIES
   nokogiri
+  parallel
   passenger (>= 6.0.0)
   selenium-webdriver
   sinatra

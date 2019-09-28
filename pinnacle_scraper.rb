@@ -1,25 +1,23 @@
 # frozen_string_literal: true
+MALLOC_ARENA_MAX = 1
 
-MALLOC_ARENA_MAX = 2
+
 require 'rubygems'
 require 'bundler/setup'
 Bundler.require(:default)
 
-
-
-get '/' do
-  'Pinnacle Web Scraper'
+configure :production do
+  enable :reloader
 end
 
-get '/api' do
-  fork
+def selenium_scrape(username, password)
   # Configure the driver to run in headless mode
   options = Selenium::WebDriver::Chrome::Options.new
   options.add_argument('--headless')
   d = Selenium::WebDriver.for :chrome, options: options
 
-  @username = params['un'].to_s
-  @password = params['pw'].to_s
+  @username = username
+  @password = password
 
   # Emulates rails' squish method
   squish = ->(s) { s.strip.gsub(/\s+/, ' ') }
@@ -84,4 +82,12 @@ get '/api' do
     # Renders JSON to page
     courses.to_json
   end
+end
+
+get '/' do
+  'Pinnacle Web Scraper'
+end
+
+get '/api' do
+  selenium_scrape(params['un'].to_s, params['pw'].to_s)
 end
