@@ -82,6 +82,5 @@ get '/api' do
     d.quit
     # Renders JSON to page
     courses.to_json
-    exit true
   end
 end
