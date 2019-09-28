@@ -12,6 +12,7 @@ get '/' do
 end
 
 get '/api' do
+  fork
   # Configure the driver to run in headless mode
   options = Selenium::WebDriver::Chrome::Options.new
   options.add_argument('--headless')
