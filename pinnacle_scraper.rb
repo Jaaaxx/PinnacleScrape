@@ -84,8 +84,32 @@ def selenium_scrape(username, password)
   end
 end
 
+def verify_pw(username, password)
+  options = Selenium::WebDriver::Chrome::Options.new
+  options.add_argument('--headless')
+  d = Selenium::WebDriver.for :chrome, options: options
+  @username = username
+  @password = password
+  d.get 'https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/GradeReport.aspx'
+  # Login Page
+  (d.find_element :id, 'userNameInput').clear
+  (d.find_element :id, 'userNameInput').send_keys @username
+  (d.find_element :id, 'passwordInput').clear
+  (d.find_element :id, 'passwordInput').send_keys @password
+  (d.find_element :id, 'submitButton').click
+  if Nokogiri::HTML(d.page_source).css('#errorText').text != ''
+    'False'
+  else
+    'True'
+  end
+end
+
 get '/' do
   'Pinnacle Web Scraper'
+end
+
+get '/verify' do
+  verify_pw(params['un'].to_s, params['pw'].to_s)
 end
 
 get '/api' do
