@@ -31,7 +31,7 @@ get '/api' do
   (d.find_element :id, 'passwordInput').send_keys @password
   (d.find_element :id, 'submitButton').click
   if Nokogiri::HTML(d.page_source).css('#errorText').text != ''
-    'Username or Password was incorrect'
+    'Username or Password was Incorrect '
   else
     # Page showing all course grades
     rows = Nokogiri::HTML(d.page_source).css('#year2019').css('.row')
@@ -78,11 +78,10 @@ get '/api' do
       course_info['Assignments'] = indiv_grades
       courses << course_info
     end
-    @courses = courses.to_json
     d.close
     d.quit
+    courses.to_json
   end
-  @courses
 end
 
 get '/verify' do
