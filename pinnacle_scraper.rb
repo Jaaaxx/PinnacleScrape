@@ -80,8 +80,6 @@ def selenium_scrape(username, password)
       course_info['Assignments'] = indiv_grades
       courses << course_info
     end
-    d.close
-    d.quit
     # Renders JSON to page
     courses.to_json
   end
