@@ -82,6 +82,7 @@ def selenium_scrape(username, password)
     end
     # Renders JSON to page
     courses.to_json
+    d.close
   end
 end
 
