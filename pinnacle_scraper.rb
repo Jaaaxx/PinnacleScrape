@@ -1,26 +1,24 @@
 # frozen_string_literal: true
-MALLOC_ARENA_MAX = 1
-
 
 require 'rubygems'
 require 'bundler/setup'
-Bundler.require(:default)
 
-configure :production do
-  enable :reloader
+Bundler.require(:default)
+get '/' do
+  'Pinnacle Web Scraper'
 end
 
-def selenium_scrape(username, password)
-  # Configure the driver to run in headless mode
+get '/api' do
+  # Selenium::WebDriver::Chrome.driver_path = ENV['GOOGLE_CHROME_BIN']
   options = Selenium::WebDriver::Chrome::Options.new
-  options.binary = ENV['GOOGLE_CHROME_BIN']
+  # options.binary = ENV['GOOGLE_CHROME_BIN']
   options.add_argument('--no-sandbox')
   options.add_argument('--headless')
   options.add_argument('--disable-dev-shm-usage')
   d = Selenium::WebDriver.for :chrome, options: options
 
-  @username = username
-  @password = password
+  @username = params['un'].to_s
+  @password = params['pw'].to_s
 
   # Emulates rails' squish method
   squish = ->(s) { s.strip.gsub(/\s+/, ' ') }
@@ -80,23 +78,23 @@ def selenium_scrape(username, password)
       course_info['Assignments'] = indiv_grades
       courses << course_info
     end
-    # Renders JSON to page
-    courses.to_json
+    @courses = courses.to_json
     d.close
     d.quit
   end
+  @courses
 end
 
-def verify_pw(username, password)
-  Selenium::WebDriver::Chrome.driver_path = ENV['GOOGLE_CHROME_BIN']
+get '/verify' do
+  # Selenium::WebDriver::Chrome.driver_path = ENV['GOOGLE_CHROME_BIN']
   options = Selenium::WebDriver::Chrome::Options.new
-  options.binary = ENV['GOOGLE_CHROME_BIN']
+  # options.binary = ENV['GOOGLE_CHROME_BIN']
   options.add_argument('--no-sandbox')
   options.add_argument('--headless')
   options.add_argument('--disable-dev-shm-usage')
   d = Selenium::WebDriver.for :chrome, options: options
-  @username = username
-  @password = password
+  @username = params['un'].to_s
+  @password = params['pw'].to_s
   d.get 'https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/GradeReport.aspx'
   # Login Page
   (d.find_element :id, 'userNameInput').clear
@@ -104,23 +102,8 @@ def verify_pw(username, password)
   (d.find_element :id, 'passwordInput').clear
   (d.find_element :id, 'passwordInput').send_keys @password
   (d.find_element :id, 'submitButton').click
-  if Nokogiri::HTML(d.page_source).css('#errorText').text != ''
-    'False'
-  else
-    'True'
-  end
+  fin = Nokogiri::HTML(d.page_source).css('#errorText').text != '' ? 'False' : 'True'
   d.close
   d.quit
-end
-
-get '/' do
-  'Pinnacle Web Scraper'
-end
-
-get '/verify' do
-  verify_pw(params['un'].to_s, params['pw'].to_s)
-end
-
-get '/api' do
-  selenium_scrape(params['un'].to_s, params['pw'].to_s)
+  fin
 end
