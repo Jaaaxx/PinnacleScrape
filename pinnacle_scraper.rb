@@ -13,8 +13,11 @@ end
 def selenium_scrape(username, password)
   # Configure the driver to run in headless mode
   options = Selenium::WebDriver::Chrome::Options.new
+  options.binary = os.environ.get 'GOOGLE_CHROME_BIN'
   options.add_argument('--headless')
-  d = Selenium::WebDriver.for :chrome, options: options
+  options.add_argument('--disable-dev-shm-usage')
+  options.add_argument('--no-sandbox')
+  d = Selenium::WebDriver.for :chrome, options: options, executable_path: os.environ.get('CHROMEDRIVER_PATH')
 
   @username = username
   @password = password
