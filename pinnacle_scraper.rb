@@ -12,11 +12,11 @@ end
 
 def selenium_scrape(username, password)
   # Configure the driver to run in headless mode
+  Selenium::WebDriver::Chrome.driver_path = ENV['GOOGLE_CHROME_BIN']
   options = Selenium::WebDriver::Chrome::Options.new
   options.add_argument('--no-sandbox')
   options.add_argument('--headless')
   options.add_argument('--disable-dev-shm-usage')
-  options.binary = ENV['GOOGLE_CHROME_BIN']
   d = Selenium::WebDriver.for :chrome, options: options
 
   @username = username
@@ -82,16 +82,15 @@ def selenium_scrape(username, password)
     end
     # Renders JSON to page
     courses.to_json
-    d.close
   end
 end
 
 def verify_pw(username, password)
+  Selenium::WebDriver::Chrome.driver_path = ENV['GOOGLE_CHROME_BIN']
   options = Selenium::WebDriver::Chrome::Options.new
   options.add_argument('--no-sandbox')
   options.add_argument('--headless')
   options.add_argument('--disable-dev-shm-usage')
-  options.binary = ENV['GOOGLE_CHROME_BIN']
   d = Selenium::WebDriver.for :chrome, options: options
   @username = username
   @password = password
@@ -107,7 +106,6 @@ def verify_pw(username, password)
   else
     'True'
   end
-  d.close
 end
 
 get '/' do
