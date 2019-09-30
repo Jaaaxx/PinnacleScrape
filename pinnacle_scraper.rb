@@ -88,9 +88,11 @@ end
 
 def verify_pw(username, password)
   options = Selenium::WebDriver::Chrome::Options.new
-  options.add_argument('--headless')
   options.binary = ENV['GOOGLE_CHROME_BIN']
+  ENV['DISPLAY'] = ':20'
+  options.add_argument('--headless')
   options.add_argument('--disable-gpu')
+  options.add_argument('--disable-extensions')
   options.add_argument('--disable-dev-shm-usage')
   options.add_argument('--no-sandbox')
   d = Selenium::WebDriver.for :chrome, options: options
