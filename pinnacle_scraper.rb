@@ -82,7 +82,8 @@ def selenium_scrape(username, password)
     end
     # Renders JSON to page
     courses.to_json
-    d.close.quit
+    d.close
+    d.quit
   end
 end
 
@@ -108,7 +109,8 @@ def verify_pw(username, password)
   else
     'True'
   end
-  d.close.quit
+  d.close
+  d.quit
 end
 
 get '/' do
