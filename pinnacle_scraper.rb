@@ -13,10 +13,10 @@ end
 def selenium_scrape(username, password)
   # Configure the driver to run in headless mode
   options = Selenium::WebDriver::Chrome::Options.new
-  options.add_argument('--headless')
-  options.add_argument('--disable-gpu')
-  options.add_argument('--disable-dev-shm-usage')
   options.add_argument('--no-sandbox')
+  options.add_argument('--headless')
+  options.add_argument('--disable-dev-shm-usage')
+  options.binary = ENV['GOOGLE_CHROME_BIN']
   d = Selenium::WebDriver.for :chrome, options: options
 
   @username = username
@@ -107,6 +107,7 @@ def verify_pw(username, password)
   else
     'True'
   end
+  d.close
 end
 
 get '/' do
