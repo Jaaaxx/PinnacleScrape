@@ -34,8 +34,7 @@ get '/api' do
     (d.find_element :id, 'passwordInput').clear
     (d.find_element :id, 'passwordInput').send_keys @password
     (d.find_element :id, 'submitButton').click
-    sleep 1
-    if d.getCurrentUrl == 'https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/GradeReport.aspx'
+    if Nokogiri::HTML(d.page_source).css('#errorText').text != ''
       'Username or Password was Incorrect '
     else
       # Page showing all course grades
@@ -110,7 +109,7 @@ get '/verify' do
   (d.find_element :id, 'passwordInput').clear
   (d.find_element :id, 'passwordInput').send_keys @password
   (d.find_element :id, 'submitButton').click
-  fin = d.getCurrentUrl == 'https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/GradeReport.aspx' ? 'False' : 'True'
+  fin = Nokogiri::HTML(d.page_source).css('#errorText').text != '' ? 'False' : 'True'
   d.close
   d.quit
   fin
