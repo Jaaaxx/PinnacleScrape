@@ -19,8 +19,7 @@ get '/api' do
     begin
       d = Selenium::WebDriver.for :chrome, options: options
     rescue WebDriverError
-      sleep 10
-      d = Selenium::WebDriver.for :chrome, options: options
+      system 'heroku restart'
     end
     @username = params['un'].to_s
     @password = params['pw'].to_s
@@ -99,8 +98,7 @@ get '/verify' do
   begin
     d = Selenium::WebDriver.for :chrome, options: options
   rescue WebDriverError
-    sleep 10
-    d = Selenium::WebDriver.for :chrome, options: options
+    system 'heroku restart'
   end
   @username = params['un'].to_s
   @password = params['pw'].to_s
