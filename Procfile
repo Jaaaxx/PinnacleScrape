@@ -1,1 +1,1 @@
-sinatra: bundle exec ruby pinnacle_scraper.rb -p $PORT
+web: bundle exec ruby pinnacle_scraper.rb -p $PORT
