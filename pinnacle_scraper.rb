@@ -16,11 +16,7 @@ get '/api' do
     options.add_argument('--no-sandbox')
     options.add_argument('--headless')
     options.add_argument('--disable-dev-shm-usage')
-    begin
-      d = Selenium::WebDriver.for :chrome, options: options
-    rescue WebDriverError
-      system 'heroku restart'
-    end
+    d = Selenium::WebDriver.for :chrome, options: options
     @username = params['un'].to_s
     @password = params['pw'].to_s
 
@@ -95,11 +91,8 @@ get '/verify' do
   options.add_argument('--no-sandbox')
   options.add_argument('--headless')
   options.add_argument('--disable-dev-shm-usage')
-  begin
-    d = Selenium::WebDriver.for :chrome, options: options
-  rescue WebDriverError
-    system 'heroku restart'
-  end
+  d = Selenium::WebDriver.for :chrome, options: options
+ 
   @username = params['un'].to_s
   @password = params['pw'].to_s
   d.get 'https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/GradeReport.aspx'
