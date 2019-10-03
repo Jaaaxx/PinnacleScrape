@@ -2,7 +2,6 @@
 
 require 'rubygems'
 require 'bundler/setup'
-
 Bundler.require(:default)
 
 get '/' do
@@ -10,100 +9,59 @@ get '/' do
 end
 
 get '/api' do
-    # Selenium::WebDriver::Chrome.driver_path = ENV['GOOGLE_CHROME_BIN']
-    options = Selenium::WebDriver::Chrome::Options.new
-    # options.binary = ENV['GOOGLE_CHROME_BIN']
-    options.add_argument('--no-sandbox')
-    options.add_argument('--headless')
-    options.add_argument('--disable-dev-shm-usage')
-    d = Selenium::WebDriver.for :chrome, options: options
-    @username = params['un'].to_s
-    @password = params['pw'].to_s
+  agent = Mechanize.new
+  page = agent.get('https://fs.browardschools.com/adfs/ls/?wctx=WsFedOwinState%3dnZZ1ZykbSO8be-K298TNbJe1xdfUs01zuVyG-22YuP6OpgjA825E-cleXlE_x7upfBuMup-eKNPk38DTuJN7SO5zj2g3bVxqq93jWmG7UWzER2CPcHAM4O5GCuJ8RSar7-lPywjTxVvUc-5lgkBEnQvVwnUbbEJC9LBe7XpPogfjZqnCw8jcVfT27IUE59XO4Fv6PNytNc3-5v5bTzRW8i_hzgj7_fd6iVPNrkZlZjvdIN8V0ScNd3z8DWNhYDYNxyrukVDu4NUxo7y6R2xe6fu4gEk-8A80lsdYGkdA4zCp7VMnjzpv6UX9scC_zOc4PmBSRg&wa=wsignin1.0&wtrealm=http%3a%2f%2fgb.browardschools.com%2fpinnacle%2fgradebook%2f')
+  form = page.forms.first
+  form['UserName'] = 'browardschools\\' + params['un'].to_s
+  form['Password'] = params['pw'].to_s
+  page = form.submit.forms.first.submit
+  squish = ->(s) { s.strip.gsub(/\s+/, ' ') }
+  blank  = ->(s) { s.to_s.strip.empty? ? 'BLANK' : s }
+  rows = Nokogiri::HTML(page.body).css('#year2019').css('.row')
+  course_links = {}
+  rows.each do |row|
+    course = row.css '.course'
+    teacher = row.css '.teacher'
+    row.css('.letter-container').each do |letter|
+      next if blank.call(squish.call(letter.css('.percent').text)) == 'BLANK'
 
-    # Emulates rails' squish method
-    squish = ->(s) { s.strip.gsub(/\s+/, ' ') }
-    blank  = ->(s) { s.to_s.strip.empty? ? 'BLANK' : s }
-    d.get 'https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/GradeReport.aspx'
-    # Login Page
-    (d.find_element :id, 'userNameInput').clear
-    (d.find_element :id, 'userNameInput').send_keys @username
-    (d.find_element :id, 'passwordInput').clear
-    (d.find_element :id, 'passwordInput').send_keys @password
-    (d.find_element :id, 'submitButton').click
-    if Nokogiri::HTML(d.page_source).css('#errorText').text != ''
-      'Username or Password was Incorrect '
-    else
-      # Page showing all course grades
-      rows = Nokogiri::HTML(d.page_source).css('#year2019').css('.row')
-      # Dictionary with courses as keys, links to courses as values
-      course_links = {}
-      # Each course has its own row
-      rows.each do |row|
-        course = row.css '.course'
-        teacher = row.css '.teacher'
-        # Quarter Identifier (clickable letter next to course)
-        row.css('.letter-container').each do |letter|
-          # Does not search courses that have no grades
-          next if blank.call(squish.call(letter.css('.percent').text)) == 'BLANK'
-
-          # Label underneath letter that shows quarter
-          quarter = letter.css '.letter-label'
-          # Creates key to add to dictionary for course links
-          key = squish.call(course.text) + '|' + squish.call(quarter.text).sub('Quarter', 'Quarter ') + '|' + squish.call(teacher.text)
-          course_links[key] = letter['href']
-        end
-      end
-
-      courses = []
-      course_links.each do |course, l|
-        course_info = {}
-        d.get "https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/#{l}"
-        page = Nokogiri::HTML(d.page_source).css '#ContentMain'
-        # Keys to add to hashed course information
-        course_info['Grade']   = squish.call(Nokogiri::HTML(d.page_source).css('#ContentHeader').css('.percent').text)
-        course_info['Course']  = course.split('|')[0]
-        course_info['Quarter'] = course.split('|')[1]
-        course_info['Teacher'] = course.split('|')[2]
-        assignments = page.css '.assignment'
-        # Array of all individual grades' information
-        indiv_grades = []
-        assignments.each do |a|
-          assignment_info = {}
-          assignment_info['Name'] = squish.call(a.css('.title').text)
-          assignment_info['Points'] = blank.call(squish.call(a.css('.points').text))
-          assignment_info['Max'] = squish.call(a.css('.max').text).tr('max', '')
-          indiv_grades << assignment_info
-        end
-        # Adds array of grades information to course info
-        course_info['Assignments'] = indiv_grades
-        courses << course_info
-      end
-      d.close
-      d.quit
-      courses.to_json
+      quarter = letter.css '.letter-label'
+      key = squish.call(course.text) + '|' + squish.call(quarter.text).sub('Quarter', 'Quarter ') + '|' + squish.call(teacher.text)
+      course_links[key] = letter['href']
     end
   end
+  courses = []
+  course_links.each do |course, l|
+    course_info = {}
+    g_driver = agent.get("https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/#{l}")
+    page = Nokogiri::HTML(g_driver.body).css '#ContentMain'
+    course_info['Grade']   = squish.call(Nokogiri::HTML(g_driver.body).css('#ContentHeader').css('.percent').text)
+    course_info['Course']  = course.split('|')[0]
+    course_info['Quarter'] = course.split('|')[1]
+    course_info['Teacher'] = course.split('|')[2]
+    assignments = page.css '.assignment'
+    indiv_grades = []
+    assignments.each do |a|
+      assignment_info = {}
+      assignment_info['Name'] = squish.call(a.css('.title').text)
+      assignment_info['Points'] = blank.call(squish.call(a.css('.points').text))
+      assignment_info['Max'] = squish.call(a.css('.max').text).tr('max', '')
+      indiv_grades << assignment_info
+    end
+    course_info['Assignments'] = indiv_grades
+    courses << course_info
+  end
+  courses.to_json == '[]' ? 'Username or Password was Incorrect' : courses.to_json
+end
+
+
 
 get '/verify' do
-  # Selenium::WebDriver::Chrome.driver_path = ENV['GOOGLE_CHROME_BIN']
-  options = Selenium::WebDriver::Chrome::Options.new
-  # options.binary = ENV['GOOGLE_CHROME_BIN']
-  options.add_argument('--no-sandbox')
-  options.add_argument('--headless')
-  options.add_argument('--disable-dev-shm-usage')
-  d = Selenium::WebDriver.for :chrome, options: options
- 
-  @username = params['un'].to_s
-  @password = params['pw'].to_s
-  d.get 'https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/GradeReport.aspx'
-  # Login Page
-  (d.find_element :id, 'userNameInput').clear
-  (d.find_element :id, 'userNameInput').send_keys @username
-  (d.find_element :id, 'passwordInput').clear
-  (d.find_element :id, 'passwordInput').send_keys @password
-  (d.find_element :id, 'submitButton').click
-  fin = Nokogiri::HTML(d.page_source).css('#errorText').text != '' ? 'False' : 'True'
-  d.close
-  d.quit
-  fin
+  agent = Mechanize.new
+  page = agent.get('https://fs.browardschools.com/adfs/ls/?wctx=WsFedOwinState%3dnZZ1ZykbSO8be-K298TNbJe1xdfUs01zuVyG-22YuP6OpgjA825E-cleXlE_x7upfBuMup-eKNPk38DTuJN7SO5zj2g3bVxqq93jWmG7UWzER2CPcHAM4O5GCuJ8RSar7-lPywjTxVvUc-5lgkBEnQvVwnUbbEJC9LBe7XpPogfjZqnCw8jcVfT27IUE59XO4Fv6PNytNc3-5v5bTzRW8i_hzgj7_fd6iVPNrkZlZjvdIN8V0ScNd3z8DWNhYDYNxyrukVDu4NUxo7y6R2xe6fu4gEk-8A80lsdYGkdA4zCp7VMnjzpv6UX9scC_zOc4PmBSRg&wa=wsignin1.0&wtrealm=http%3a%2f%2fgb.browardschools.com%2fpinnacle%2fgradebook%2f')
+  form = page.forms.first
+  form['UserName'] = 'browardschools\\' + params['un'].to_s
+  form['Password'] = params['pw'].to_s
+  page = agent.post(page.uri.to_s, form.request_data)
+  Nokogiri::HTML(page.body).at_css('#errorText') ? 'False' : 'True'
 end
