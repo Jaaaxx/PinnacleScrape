@@ -23,8 +23,6 @@ get '/api' do
     course = row.css '.course'
     teacher = row.css '.teacher'
     row.css('.letter-container').each do |letter|
-      next if blank.call(squish.call(letter.css('.percent').text)) == 'BLANK'
-
       quarter = letter.css '.letter-label'
       key = squish.call(course.text) + '|' + squish.call(quarter.text).sub('Quarter', 'Quarter ') + '|' + squish.call(teacher.text)
       course_links[key] = letter['href']
