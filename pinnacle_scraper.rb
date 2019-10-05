@@ -45,7 +45,7 @@ get '/api' do
       assignment_info = {}
       assignment_info['Name'] = squish.call(a.css('.title').text)
       assignment_info['Points'] = blank.call(squish.call(a.css('.points').text))
-      assignment_info['Max'] = squish.call(a.css('.max').text).tr('max', '')
+      assignment_info['Max'] = squish.call(a.css('.max').text).tr('max ', '')
       indiv_grades << assignment_info
     end
     course_info['Assignments'] = indiv_grades
