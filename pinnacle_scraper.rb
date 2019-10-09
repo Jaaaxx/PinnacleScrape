@@ -17,39 +17,45 @@ get '/api' do
   page = form.submit.forms.first.submit
   squish = ->(s) { s.strip.gsub(/\s+/, ' ') }
   blank  = ->(s) { s.to_s.strip.empty? ? 'BLANK' : s }
-  rows = Nokogiri::HTML(page.body).css('#year2019').css('.row')
-  course_links = {}
-  rows.each do |row|
-    course = row.css '.course'
-    teacher = row.css '.teacher'
-    row.css('.letter-container').each do |letter|
-      quarter = letter.css '.letter-label'
-      key = squish.call(course.text) + '|' + squish.call(quarter.text).sub('Quarter', 'Quarter ') + '|' + squish.call(teacher.text)
-      course_links[key] = letter['href']
+  if params['un'].to_s.downcase[0] == 'p'
+    teacher_info = {}
+    teacher_info['Name'] = Nokogiri::HTML(page.body).css('#HeaderRow').css('.hidden-xs').text
+    teacher_info.to_json == '{"Name":""}' ? 'Username or Password was Incorrect' : teacher_info.to_json
+  else
+    rows = Nokogiri::HTML(page.body).css('#year2019').css('.row')
+    course_links = {}
+    rows.each do |row|
+      course = row.css '.course'
+      teacher = row.css '.teacher'
+      row.css('.letter-container').each do |letter|
+        quarter = letter.css '.letter-label'
+        key = squish.call(course.text) + '|' + squish.call(quarter.text).sub('Quarter', 'Quarter ') + '|' + squish.call(teacher.text)
+        course_links[key] = letter['href']
+      end
     end
-  end
-  courses = []
-  course_links.each do |course, l|
-    course_info = {}
-    g_driver = agent.get("https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/#{l}")
-    page = Nokogiri::HTML(g_driver.body).css '#ContentMain'
-    course_info['Grade']   = squish.call(Nokogiri::HTML(g_driver.body).css('#ContentHeader').css('.percent').text.tr('%', ''))
-    course_info['Course']  = course.split('|')[0]
-    course_info['Quarter'] = course.split('|')[1]
-    course_info['Teacher'] = course.split('|')[2]
-    assignments = page.css '.assignment'
-    indiv_grades = []
-    assignments.each do |a|
-      assignment_info = {}
-      assignment_info['Name'] = squish.call(a.css('.title').text)
-      assignment_info['Points'] = blank.call(squish.call(a.css('.points').text))
-      assignment_info['Max'] = squish.call(a.css('.max').text).tr('max ', '')
-      indiv_grades << assignment_info
+    courses = []
+    course_links.each do |course, l|
+      course_info = {}
+      g_driver = agent.get("https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/#{l}")
+      page = Nokogiri::HTML(g_driver.body).css '#ContentMain'
+      course_info['Grade'] = squish.call(Nokogiri::HTML(g_driver.body).css('#ContentHeader').css('.percent').text.tr('%', ''))
+      course_info['Course'] = course.split('|')[0]
+      course_info['Quarter'] = course.split('|')[1]
+      course_info['Teacher'] = course.split('|')[2]
+      assignments = page.css '.assignment'
+      indiv_grades = []
+      assignments.each do |a|
+        assignment_info = {}
+        assignment_info['Name'] = squish.call(a.css('.title').text)
+        assignment_info['Points'] = blank.call(squish.call(a.css('.points').text))
+        assignment_info['Max'] = squish.call(a.css('.max').text).tr('max ', '')
+        indiv_grades << assignment_info
+      end
+      course_info['Assignments'] = indiv_grades
+      courses << course_info
     end
-    course_info['Assignments'] = indiv_grades
-    courses << course_info
+    courses.to_json == '[]' ? 'Username or Password was Incorrect' : courses.to_json
   end
-  courses.to_json == '[]' ? 'Username or Password was Incorrect' : courses.to_json
 end
 
 
