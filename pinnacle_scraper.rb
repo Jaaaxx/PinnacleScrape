@@ -34,7 +34,9 @@ get '/api' do
       end
     end
     courses = []
+    threading = []
     course_links.each do |course, l|
+      threading << Thread.new do
       course_info = {}
       g_driver = agent.get("https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/#{l}")
       page = Nokogiri::HTML(g_driver.body).css '#ContentMain'
@@ -53,7 +55,9 @@ get '/api' do
       end
       course_info['Assignments'] = indiv_grades
       courses << course_info
+      end
     end
+    threading.each(&:join)
     courses.to_json == '[]' ? 'Username or Password was Incorrect' : courses.to_json
   end
 end
