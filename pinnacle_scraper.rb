@@ -34,6 +34,9 @@ get '/api' do
       end
     end
     courses = []
+    course_links.each do
+      courses << nil
+    end
     threading = []
     course_links.each do |course, l|
       threading << Thread.new do
@@ -54,7 +57,7 @@ get '/api' do
         indiv_grades << assignment_info
       end
       course_info['Assignments'] = indiv_grades
-      courses << course_info
+      courses[course_links.find_index { |k, _| k == course }] = course_info
       end
     end
     threading.each(&:join)
