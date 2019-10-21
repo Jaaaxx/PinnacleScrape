@@ -36,11 +36,8 @@ get '/api' do
       end
     end
     courses = []
-    course_links.each do
-      courses << nil
-    end
     threading = []
-    course_links.each do |course, l|
+    course_links.each_with_index do |(course, l), index|
       threading << Thread.new do
       course_info = {}
       g_driver = agent.get("https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/#{l}")
@@ -59,7 +56,7 @@ get '/api' do
         indiv_grades << assignment_info
       end
       course_info['Assignments'] = indiv_grades
-      courses[course_links.find_index { |k, _| k == course }] = course_info
+      courses[index] = course_info
       end
     end
     threading.each(&:join)
