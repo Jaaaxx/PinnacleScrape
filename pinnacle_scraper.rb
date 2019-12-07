@@ -48,16 +48,15 @@ get '/api' do
       course_info['Course'] = course.split('|')[0]
       course_info['Quarter'] = course.split('|')[1]
       course_info['Teacher'] = course.split('|')[2]
+      course_info['Assignments'] = []
       assignments = page.css '.assignment'
-      indiv_grades = []
       assignments.each do |a|
         assignment_info = {}
         assignment_info['Name'] = squish.call(a.css('.title').text)
         assignment_info['Points'] = blank.call(squish.call(a.css('.points').text))
         assignment_info['Max'] = squish.call(a.css('.max').text).tr('max ', '')
-        indiv_grades << assignment_info
+        course_info['Assignments'] << assignment_info
       end
-      course_info['Assignments'] = indiv_grades
       courses[index] = course_info
       end
     end
