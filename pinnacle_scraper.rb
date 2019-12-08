@@ -61,30 +61,9 @@ get '/api' do
       end
     end
     threading.each(&:join)
-    cin = {'Grade': '100', 'Course': 'Testing', 'Quarter': 'Quarter 2', 'Teacher': 'Testing',
-           'Assignments': [{'Name': '100', 'Points': '100', 'Max': '100'},
-                           {'Name': '98', 'Points': '98', 'Max': '100'},
-                           {'Name': '96', 'Points': '96', 'Max': '100'},
-                           {'Name': '94', 'Points': '94', 'Max': '100'},
-                           {'Name': '92', 'Points': '92', 'Max': '100'},
-                           {'Name': '90', 'Points': '90', 'Max': '100'},
-                           {'Name': '88', 'Points': '88', 'Max': '100'},
-                           {'Name': '86', 'Points': '86', 'Max': '100'},
-                           {'Name': '84', 'Points': '84', 'Max': '100'},
-                           {'Name': '82', 'Points': '82', 'Max': '100'},
-                           {'Name': '80', 'Points': '80', 'Max': '100'},
-                           {'Name': '78', 'Points': '78', 'Max': '100'},
-                           {'Name': '76', 'Points': '76', 'Max': '100'},
-                           {'Name': '74', 'Points': '74', 'Max': '100'},
-                           {'Name': '72', 'Points': '72', 'Max': '100'},
-                           {'Name': '70', 'Points': '70', 'Max': '100'},
-                           {'Name': 'Below', 'Points': '50', 'Max': '100'}]}
-    courses << cin
     courses.to_json == '[]' ? 'Username or Password was Incorrect' : courses.to_json
   end
 end
-
-
 
 get '/verify' do
   agent = Mechanize.new
