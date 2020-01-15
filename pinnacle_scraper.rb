@@ -4,7 +4,7 @@ require 'rubygems'
 require 'bundler/setup'
 Bundler.require(:default)
 
-current_quarter = 2
+current_quarter = 3
 
 get '/' do
   'Pinnacle Web Scraper'
