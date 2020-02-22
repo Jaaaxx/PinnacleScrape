@@ -44,7 +44,7 @@ get '/api' do
       course_info = {}
       g_driver = agent.get("https://gb.browardschools.com/Pinnacle/Gradebook/InternetViewer/#{l}")
       page = Nokogiri::HTML(g_driver.body).css '#ContentMain'
-      course_info['Grade'] = squish.call(Nokogiri::HTML(g_driver.body).css('#ContentHeader').css('.percent').text.tr('%', ''))
+      course_info['Grade'] = squish.call(Nokogiri::HTML(g_driver.body).css('#ContentHeader').css('.percent').text.tr('%', '').tr(',', '').tr(' ', ''))
       course_info['Course'] = course.split('|')[0]
       course_info['Quarter'] = course.split('|')[1]
       course_info['Teacher'] = course.split('|')[2]
